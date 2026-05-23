@@ -110,36 +110,39 @@ async def on_startup():
 
 @app.get("/health", tags=["Observability & Diagnostics"])
 async def service_health_check():
-    """Diagnostic check assessing database connectivity and Redis performance."""
+    """Diagnostic check assessing database connectivity. Redis is checked
+    as an optional component and does not affect the overall health status."""
     db_healthy = False
-    redis_healthy = False
-    
-    # 1. DB check
+    redis_status = "unchecked"
+
+    # 1. DB check — required for a healthy response
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         db_healthy = True
     except Exception as e:
         logger.error("Database connection check failed", error=str(e))
-        
-    # 2. Redis check
+
+    # 2. Redis check — optional; unavailability is a warning, not a failure
     try:
         r = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
         await r.ping()
         await r.close()
-        redis_healthy = True
+        redis_status = "healthy"
     except Exception as e:
-        logger.error("Redis ping check failed", error=str(e))
+        logger.warning("Redis ping check failed (non-critical)", error=str(e))
+        redis_status = "unavailable"
 
-    status_code = status.HTTP_200_OK if db_healthy and redis_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
-    
+    # Overall health is determined solely by PostgreSQL availability
+    status_code = status.HTTP_200_OK if db_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+
     return JSONResponse(
         status_code=status_code,
         content={
-            "status": "healthy" if db_healthy and redis_healthy else "degraded",
+            "status": "healthy" if db_healthy else "degraded",
             "components": {
                 "postgresql": "healthy" if db_healthy else "unhealthy",
-                "redis": "healthy" if redis_healthy else "unhealthy"
+                "redis": redis_status
             }
         }
     )
