@@ -1,6 +1,6 @@
-# WexaAI-Analytics: Real-Time Analytics & Reporting Platform
+# enterprise-ai-analytics: Real-Time Analytics & Reporting Platform
 
-WexaAI-Analytics is a production-ready, multi-tenant Real-Time Analytics and Reporting SaaS platform designed for high-throughput event logging, dynamic querying, and real-time visualization dashboards (similar to a lightweight Mixpanel or Metabase).
+enterprise-ai-analytics is a production-ready, multi-tenant Real-Time Analytics and Reporting SaaS platform designed for high-throughput event logging, dynamic querying, and real-time visualization dashboards (similar to a lightweight Mixpanel or Metabase).
 
 The application features a sleek midnight-dark theme with premium glassmorphism layouts, robust user/role access layers, rolling rate limits, a background processing pipeline using Celery + Redis, WebSocket logs terminal, and real-time threshold alert rules evaluators.
 
